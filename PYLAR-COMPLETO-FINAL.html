@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PYLAR Obras</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --gold: #A87A3E; --ink: #252628; --white: #FFFFFF; --border: #E7E1D6; --text: #252628; --bg: #faf9f5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+
+    .login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #f5f1e8 0%, #fff 100%); }
+    .login-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 40px; max-width: 380px; width: 90%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .login-logo { width: 80px; height: 80px; background: var(--gold); border-radius: 8px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 32px; }
+    .login-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .login-subtitle { font-size: 14px; color: #999; margin-bottom: 32px; }
+    .login-form input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+    .login-form input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168, 122, 62, 0.1); }
+    .login-btn { width: 100%; padding: 12px; background: var(--gold); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .login-btn:hover { background: #9a6c36; }
+
+    .app-screen { display: none; }
+    .app-screen.active { display: flex; min-height: 100vh; }
+
+    .sidebar { width: 250px; background: var(--ink); color: white; padding: 24px; overflow-y: auto; height: 100vh; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-brand-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; color: white; }
+    .sidebar-brand-text { font-size: 14px; }
+    .sidebar-brand-text strong { display: block; color: var(--gold); font-size: 12px; text-transform: uppercase; margin-top: 4px; }
+    .nav-item { padding: 12px 16px; margin-bottom: 8px; background: transparent; border: none; color: #d8d2c4; cursor: pointer; font-size: 13px; border-radius: 6px; width: 100%; text-align: left; font-family: inherit; transition: all 0.2s; }
+    .nav-item:hover { background: rgba(255,255,255,0.1); }
+    .nav-item.active { background: var(--gold); color: white; }
+    .logout-btn-sidebar { width: 100%; background: #8a4d2a; color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; margin-top: 16px; font-family: inherit; }
+
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; background: white; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 28px; color: var(--ink); }
+    .logout-btn { padding: 8px 16px; background: #f0f0f0; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .obra-selector { display: flex; gap: 12px; margin-bottom: 24px; }
+    .obra-btn { padding: 10px 16px; background: #f0f0f0; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .obra-btn:hover { background: #e8e8e8; }
+    .obra-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card h3 { font-size: 13px; color: #999; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .card .number { font-size: 32px; font-weight: 600; color: var(--gold); }
+
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table th { background: #f8f8f8; padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text); }
+    table td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+    table tr:hover { background: #fafafa; }
+
+    .edit-btn { background: var(--gold); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .edit-btn:hover { background: #9a6c36; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; border-radius: 12px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .modal-header { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; text-transform: uppercase; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold); }
+    .modal-buttons { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-save { flex: 1; padding: 10px; background: var(--gold); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-save:hover { background: #9a6c36; }
+    .btn-cancel { flex: 1; padding: 10px; background: #f0f0f0; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+    .placeholder-msg { color: #999; font-size: 14px; padding: 20px; text-align: center; }
+
+    @media (max-width: 768px) {
+      .app-screen.active { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; }
+      .main-content { padding: 16px; }
+      .header h1 { font-size: 20px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .obra-selector { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">P</div>
+    <div class="login-title">PYLAR Obras</div>
+    <div class="login-subtitle">Gestão de Projetos de Construção</div>
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <input type="text" id="user" placeholder="Usuário" value="admin" required>
+      <input type="password" id="password" placeholder="Senha" value="123" required>
+      <button type="submit" class="login-btn">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" class="app-screen">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">P</div>
+      <div class="sidebar-brand-text">PYLAR<br><strong>Obras</strong></div>
+    </div>
+    <button class="nav-item active" onclick="openTab('dashboard', this)">📊 Dashboard</button>
+    <button class="nav-item" onclick="openTab('atividades', this)">✓ Atividades</button>
+    <button class="nav-item" onclick="openTab('cronograma', this)">📅 Cronograma</button>
+    <button class="nav-item" onclick="openTab('metas', this)">🎯 Metas</button>
+    <button class="nav-item" onclick="openTab('equipes', this)">👥 Equipes</button>
+    <button class="nav-item" onclick="openTab('materiais', this)">📦 Materiais</button>
+    <button class="nav-item" onclick="openTab('aditivos', this)">➕ Aditivos</button>
+    <button class="nav-item" onclick="openTab('urgencias', this)">⚠️ Urgências</button>
+    <button class="nav-item" onclick="openTab('importar', this)">📥 Importar</button>
+    <button class="logout-btn-sidebar" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="header">
+      <h1 id="pageTitle">Dashboard</h1>
+      <button class="logout-btn" onclick="logout()">Sair</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="tab-content active">
+      <h2 style="margin-bottom: 24px;">Resumo Geral</h2>
+      <div class="obra-selector">
+        <button class="obra-btn active" onclick="changeDashboardObra('salvador1001', this)">Salvador 1001</button>
+        <button class="obra-btn" onclick="changeDashboardObra('salvador101', this)">Salvador 101</button>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>Total de Obras</h3>
+          <div class="number" id="dashTotalObras">1</div>
+        </div>
+        <div class="card">
+          <h3>Total de Atividades</h3>
+          <div class="number" id="dashTotalAtvs">10</div>
+        </div>
+        <div class="card">
+          <h3>Metas Planejadas</h3>
+          <div class="number">0</div>
+        </div>
+        <div class="card">
+          <h3>Progresso Médio</h3>
+          <div class="number" id="dashProgresso">65%</div>
+        </div>
+      </div>
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Obra Selecionada</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Obra</th>
+              <th>Localização</th>
+              <th>Responsável</th>
+              <th>Atividades</th>
+            </tr>
+          </thead>
+          <tbody id="dashboardTable">
+            <tr>
+              <td><strong>Salvador 1001</strong></td>
+              <td>Manaus, AM</td>
+              <td>Deborah Camely</td>
+              <td>10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ATIVIDADES -->
+    <div id="atividades" class="tab-content">
+      <h2 style="margin-bottom: 24px;">Atividades</h2>
+      <div class="obra-selector">
+        <button class="obra-btn active" onclick="changeObra('salvador1001', this)">Salvador 1001</button>
+        <button class="obra-btn" onclick="changeObra('salvador101', this)">Salvador 101</button>
+      </div>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Clique em "Editar" para modificar uma atividade</p>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Duração</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="atividadesTable">
+            <tr><td colspan="5" style="text-align:center; color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CRONOGRAMA -->
+    <div id="cronograma" class="tab-content">
+      <h2>Cronograma - Gantt Chart</h2>
+      <div class="placeholder-msg">Gráfico de Gantt com predecessoras será exibido aqui</div>
+    </div>
+
+    <!-- METAS -->
+    <div id="metas" class="tab-content">
+      <h2>Metas Diárias, Semanais e Mensais</h2>
+      <div class="placeholder-msg">Metas planejadas serão exibidas aqui</div>
+    </div>
+
+    <!-- EQUIPES -->
+    <div id="equipes" class="tab-content">
+      <h2 style="margin-bottom: 24px;">Equipes</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Nome</th><th>Cargo</th><th>Obra</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Paulo Afonso</td><td>Engenheiro Responsável</td><td>Salvador 101</td></tr>
+            <tr><td>Deborah Camely</td><td>Engenheira Responsável</td><td>Salvador 1001</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MATERIAIS -->
+    <div id="materiais" class="tab-content">
+      <h2>Materiais</h2>
+      <div class="placeholder-msg">Lista de materiais e quantitativos</div>
+    </div>
+
+    <!-- ADITIVOS -->
+    <div id="aditivos" class="tab-content">
+      <h2>Aditivos</h2>
+      <div class="placeholder-msg">Aditivos e mudanças de escopo</div>
+    </div>
+
+    <!-- URGÊNCIAS -->
+    <div id="urgencias" class="tab-content">
+      <h2>Urgências</h2>
+      <div class="placeholder-msg">Itens urgentes e críticos</div>
+    </div>
+
+    <!-- IMPORTAR -->
+    <div id="importar" class="tab-content">
+      <h2>Importar Dados</h2>
+      <div class="placeholder-msg">Importação de arquivos e dados externos</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIÇÃO -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">Editar Atividade</div>
+    <div class="form-group">
+      <label>Código</label>
+      <input type="text" id="editCode" readonly>
+    </div>
+    <div class="form-group">
+      <label>Nome</label>
+      <input type="text" id="editName">
+    </div>
+    <div class="form-group">
+      <label>Duração (dias)</label>
+      <input type="number" id="editDuration" min="1">
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="editStatus">
+        <option value="Planejado">Planejado</option>
+        <option value="Em Andamento">Em Andamento</option>
+        <option value="Concluído">Concluído</option>
+      </select>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-save" onclick="saveEdit()">Salvar</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const obrasData = {
+  salvador1001: {
+    nome: 'Salvador 1001',
+    atividades: [
+      { codigo: '01.01', nome: 'Limpeza do terreno', duracao: 4, status: 'Concluído' },
+      { codigo: '01.02', nome: 'Nivelamento do terreno', duracao: 5, status: 'Concluído' },
+      { codigo: '01.03', nome: 'Locação da obra', duracao: 6, status: 'Concluído' },
+      { codigo: '01.04', nome: 'Drenagem preliminar', duracao: 7, status: 'Concluído' },
+      { codigo: '01.05', nome: 'Abertura de acessos', duracao: 8, status: 'Concluído' },
+      { codigo: '01.06', nome: 'Mobilização de equipamentos', duracao: 9, status: 'Concluído' },
+      { codigo: '01.07', nome: 'Montagem do canteiro', duracao: 10, status: 'Concluído' },
+      { codigo: '01.08', nome: 'Administração técnica', duracao: 11, status: 'Concluído' },
+      { codigo: '01.09', nome: 'Segurança e EPIs', duracao: 12, status: 'Concluído' },
+      { codigo: '01.10', nome: 'Alojamento de funcionários', duracao: 13, status: 'Concluído' },
+      { codigo: '02.01', nome: 'Demolição de estrutura', duracao: 14, status: 'Concluído' },
+      { codigo: '02.02', nome: 'Demolição de alvenaria', duracao: 15, status: 'Concluído' },
+      { codigo: '02.03', nome: 'Retirada de esquadrias', duracao: 16, status: 'Concluído' },
+      { codigo: '02.04', nome: 'Retirada de cobertura', duracao: 17, status: 'Concluído' },
+      { codigo: '02.05', nome: 'Limpeza e entulho', duracao: 18, status: 'Concluído' },
+      { codigo: '02.06', nome: 'Transporte de entulho', duracao: 19, status: 'Concluído' },
+      { codigo: '02.07', nome: 'Retirada de instalações', duracao: 20, status: 'Concluído' },
+      { codigo: '02.08', nome: 'Escavação manual', duracao: 21, status: 'Concluído' },
+      { codigo: '02.09', nome: 'Escavação mecanizada', duracao: 22, status: 'Concluído' },
+      { codigo: '02.10', nome: 'Remoção de solo contaminado', duracao: 3, status: 'Concluído' },
+      { codigo: '03.01', nome: 'Estaca pré-moldada', duracao: 4, status: 'Concluído' },
+      { codigo: '03.02', nome: 'Sapatas', duracao: 5, status: 'Concluído' },
+      { codigo: '03.03', nome: 'Blocos de fundação', duracao: 6, status: 'Concluído' },
+      { codigo: '03.04', nome: 'Viga de fundação', duracao: 7, status: 'Concluído' },
+      { codigo: '03.05', nome: 'Aterro compactado', duracao: 8, status: 'Concluído' },
+      { codigo: '03.06', nome: 'Laje térrea', duracao: 9, status: 'Concluído' },
+      { codigo: '03.07', nome: 'Pilares', duracao: 10, status: 'Concluído' },
+      { codigo: '03.08', nome: 'Vigas', duracao: 11, status: 'Concluído' },
+      { codigo: '03.09', nome: 'Lajes', duracao: 12, status: 'Concluído' },
+      { codigo: '03.10', nome: 'Escadas', duracao: 13, status: 'Concluído' },
+      { codigo: '04.01', nome: 'Guarnição das aberturas', duracao: 14, status: 'Em Andamento' },
+      { codigo: '04.02', nome: 'Alvenaria de vedação', duracao: 15, status: 'Em Andamento' },
+      { codigo: '04.03', nome: 'Divisórias em alvenaria', duracao: 16, status: 'Em Andamento' },
+      { codigo: '04.04', nome: 'Divisórias em gesso acartonado', duracao: 17, status: 'Em Andamento' },
+      { codigo: '04.05', nome: 'Forros de gesso acartonado', duracao: 18, status: 'Em Andamento' },
+      { codigo: '04.06', nome: 'Forros de madeira', duracao: 19, status: 'Em Andamento' },
+      { codigo: '04.07', nome: 'Forros em PVC', duracao: 20, status: 'Em Andamento' },
+      { codigo: '04.08', nome: 'Instalação de brises', duracao: 21, status: 'Em Andamento' },
+      { codigo: '04.09', nome: 'Frestas acústicas', duracao: 22, status: 'Em Andamento' },
+      { codigo: '04.10', nome: 'Tratamento de encontros', duracao: 3, status: 'Em Andamento' },
+      { codigo: '05.01', nome: 'Chapisco', duracao: 4, status: 'Em Andamento' },
+      { codigo: '05.02', nome: 'Reboco', duracao: 5, status: 'Em Andamento' },
+      { codigo: '05.03', nome: 'Massa corrida', duracao: 6, status: 'Em Andamento' },
+      { codigo: '05.04', nome: 'Pintura acrílica interior', duracao: 7, status: 'Em Andamento' },
+      { codigo: '05.05', nome: 'Pintura acrílica exterior', duracao: 8, status: 'Em Andamento' },
+      { codigo: '05.06', nome: 'Pintura epóxi', duracao: 9, status: 'Em Andamento' },
+      { codigo: '05.07', nome: 'Pastilhas cerâmicas', duracao: 10, status: 'Em Andamento' },
+      { codigo: '05.08', nome: 'Revestimento cerâmico', duracao: 11, status: 'Em Andamento' },
+      { codigo: '05.09', nome: 'Revestimento de porcelanato', duracao: 12, status: 'Em Andamento' },
+      { codigo: '05.10', nome: 'Pedra natural', duracao: 13, status: 'Em Andamento' },
+      { codigo: '06.01', nome: 'Estrutura metálica de cobertura', duracao: 14, status: 'Planejado' },
+      { codigo: '06.02', nome: 'Cobertura em telhas cerâmicas', duracao: 15, status: 'Planejado' },
+      { codigo: '06.03', nome: 'Cobertura em telhas metálicas', duracao: 16, status: 'Planejado' },
+      { codigo: '06.04', nome: 'Cobertura em telhas de barro', duracao: 17, status: 'Planejado' },
+      { codigo: '06.05', nome: 'Cobertura em telhas francesas', duracao: 18, status: 'Planejado' },
+      { codigo: '06.06', nome: 'Cobertura em shingles', duracao: 19, status: 'Planejado' },
+      { codigo: '06.07', nome: 'Membranas de impermeabilização', duracao: 20, status: 'Planejado' },
+      { codigo: '06.08', nome: 'Calhas e rufos', duracao: 21, status: 'Planejado' },
+      { codigo: '06.09', nome: 'Condutores', duracao: 22, status: 'Planejado' },
+      { codigo: '06.10', nome: 'Platibandas', duracao: 3, status: 'Planejado' },
+      { codigo: '07.01', nome: 'Impermeabilização de laje', duracao: 4, status: 'Planejado' },
+      { codigo: '07.02', nome: 'Impermeabilização de varanda', duracao: 5, status: 'Planejado' },
+      { codigo: '07.03', nome: 'Impermeabilização de marquise', duracao: 6, status: 'Planejado' },
+      { codigo: '07.04', nome: 'Impermeabilização de piscina', duracao: 7, status: 'Planejado' },
+      { codigo: '07.05', nome: 'Impermeabilização de cozinha', duracao: 8, status: 'Planejado' },
+      { codigo: '07.06', nome: 'Impermeabilização de banheiro', duracao: 9, status: 'Planejado' },
+      { codigo: '07.07', nome: 'Impermeabilização de áreas molhadas', duracao: 10, status: 'Planejado' },
+      { codigo: '07.08', nome: 'Impermeabilização de fachada', duracao: 11, status: 'Planejado' },
+      { codigo: '07.09', nome: 'Impermeabilização de fundação', duracao: 12, status: 'Planejado' },
+      { codigo: '07.10', nome: 'Drenos', duracao: 13, status: 'Planejado' },
+      { codigo: '08.01', nome: 'Portas de entrada', duracao: 14, status: 'Planejado' },
+      { codigo: '08.02', nome: 'Portas internas', duracao: 15, status: 'Planejado' },
+      { codigo: '08.03', nome: 'Janelas', duracao: 16, status: 'Planejado' },
+      { codigo: '08.04', nome: 'Basculantes', duracao: 17, status: 'Planejado' },
+      { codigo: '08.05', nome: 'Vidraças', duracao: 18, status: 'Planejado' },
+      { codigo: '08.06', nome: 'Claraboias', duracao: 19, status: 'Planejado' },
+      { codigo: '08.07', nome: 'Portas corta-fogo', duracao: 20, status: 'Planejado' },
+      { codigo: '08.08', nome: 'Dobradiças e puxadores', duracao: 21, status: 'Planejado' },
+      { codigo: '08.09', nome: 'Vidros', duracao: 22, status: 'Planejado' },
+      { codigo: '08.10', nome: 'Vedação de esquadrias', duracao: 3, status: 'Planejado' },
+      { codigo: '09.01', nome: 'Eletroduto e passagem', duracao: 4, status: 'Planejado' },
+      { codigo: '09.02', nome: 'Caixas de passagem', duracao: 5, status: 'Planejado' },
+      { codigo: '09.03', nome: 'Quadro de distribuição', duracao: 6, status: 'Planejado' },
+      { codigo: '09.04', nome: 'Disjuntores', duracao: 7, status: 'Planejado' },
+      { codigo: '09.05', nome: 'Tomadas', duracao: 8, status: 'Planejado' },
+      { codigo: '09.06', nome: 'Interruptores', duracao: 9, status: 'Planejado' },
+      { codigo: '09.07', nome: 'Lâmpadas e lustres', duracao: 10, status: 'Planejado' },
+      { codigo: '09.08', nome: 'Instalação de AR', duracao: 11, status: 'Planejado' },
+      { codigo: '09.09', nome: 'Instalação de chuveiro elétrico', duracao: 12, status: 'Planejado' },
+      { codigo: '09.10', nome: 'Cabos e fios', duracao: 13, status: 'Planejado' },
+      { codigo: '10.01', nome: 'Tubo PVC', duracao: 14, status: 'Planejado' },
+      { codigo: '10.02', nome: 'Tubo CPVC', duracao: 15, status: 'Planejado' },
+      { codigo: '10.03', nome: 'Tubo cobre', duracao: 16, status: 'Planejado' },
+      { codigo: '10.04', nome: 'Caixas de esgoto', duracao: 17, status: 'Planejado' },
+      { codigo: '10.05', nome: 'Colunas de prumada', duracao: 18, status: 'Planejado' },
+      { codigo: '10.06', nome: 'Ralos', duracao: 19, status: 'Planejado' },
+      { codigo: '10.07', nome: 'Grelhas', duracao: 20, status: 'Planejado' },
+      { codigo: '10.08', nome: 'Pias', duracao: 21, status: 'Planejado' },
+      { codigo: '10.09', nome: 'Cubas', duracao: 22, status: 'Planejado' },
+      { codigo: '10.10', nome: 'Torneiras', duracao: 3, status: 'Planejado' }
+    ]
+  },
+  salvador101: {
+    nome: 'Salvador 101',
+    atividades: [
+      { codigo: '02.01', nome: 'Demolição de estrutura', duracao: 3, status: 'Concluído' },
+      { codigo: '02.02', nome: 'Demolição de alvenaria', duracao: 4, status: 'Concluído' },
+      { codigo: '02.03', nome: 'Retirada de esquadrias', duracao: 5, status: 'Concluído' },
+      { codigo: '02.04', nome: 'Retirada de cobertura', duracao: 6, status: 'Concluído' },
+      { codigo: '02.05', nome: 'Limpeza e entulho', duracao: 7, status: 'Concluído' },
+      { codigo: '02.06', nome: 'Transporte de entulho', duracao: 8, status: 'Concluído' },
+      { codigo: '02.07', nome: 'Retirada de instalações', duracao: 9, status: 'Concluído' },
+      { codigo: '02.08', nome: 'Escavação manual', duracao: 10, status: 'Concluído' },
+      { codigo: '02.09', nome: 'Escavação mecanizada', duracao: 11, status: 'Concluído' },
+      { codigo: '02.10', nome: 'Remoção de solo contaminado', duracao: 12, status: 'Concluído' },
+      { codigo: '02.11', nome: 'Atividade 11 da Demolição', duracao: 13, status: 'Concluído' },
+      { codigo: '03.01', nome: 'Estaca pré-moldada', duracao: 14, status: 'Concluído' },
+      { codigo: '03.02', nome: 'Sapatas', duracao: 15, status: 'Concluído' },
+      { codigo: '03.03', nome: 'Blocos de fundação', duracao: 16, status: 'Concluído' },
+      { codigo: '03.04', nome: 'Viga de fundação', duracao: 2, status: 'Concluído' },
+      { codigo: '03.05', nome: 'Aterro compactado', duracao: 3, status: 'Concluído' },
+      { codigo: '03.06', nome: 'Laje térrea', duracao: 4, status: 'Concluído' },
+      { codigo: '03.07', nome: 'Pilares', duracao: 5, status: 'Concluído' },
+      { codigo: '03.08', nome: 'Vigas', duracao: 6, status: 'Concluído' },
+      { codigo: '03.09', nome: 'Lajes', duracao: 7, status: 'Concluído' },
+      { codigo: '03.10', nome: 'Escadas', duracao: 8, status: 'Em Andamento' },
+      { codigo: '03.11', nome: 'Rampas', duracao: 9, status: 'Em Andamento' },
+      { codigo: '05.01', nome: 'Chapisco', duracao: 10, status: 'Em Andamento' },
+      { codigo: '05.02', nome: 'Reboco', duracao: 11, status: 'Em Andamento' },
+      { codigo: '05.03', nome: 'Massa corrida', duracao: 12, status: 'Em Andamento' },
+      { codigo: '05.04', nome: 'Pintura acrílica interior', duracao: 13, status: 'Em Andamento' },
+      { codigo: '05.05', nome: 'Pintura acrílica exterior', duracao: 14, status: 'Em Andamento' },
+      { codigo: '05.06', nome: 'Pintura epóxi', duracao: 15, status: 'Em Andamento' },
+      { codigo: '05.07', nome: 'Pastilhas cerâmicas', duracao: 16, status: 'Em Andamento' },
+      { codigo: '05.08', nome: 'Revestimento cerâmico', duracao: 2, status: 'Em Andamento' },
+      { codigo: '05.09', nome: 'Revestimento de porcelanato', duracao: 3, status: 'Em Andamento' },
+      { codigo: '05.10', nome: 'Pedra natural', duracao: 4, status: 'Em Andamento' },
+      { codigo: '05.11', nome: 'Mármore', duracao: 5, status: 'Em Andamento' },
+      { codigo: '06.01', nome: 'Estrutura metálica de cobertura', duracao: 6, status: 'Em Andamento' },
+      { codigo: '06.02', nome: 'Cobertura em telhas cerâmicas', duracao: 7, status: 'Em Andamento' },
+      { codigo: '06.03', nome: 'Cobertura em telhas metálicas', duracao: 8, status: 'Planejado' },
+      { codigo: '06.04', nome: 'Cobertura em telhas de barro', duracao: 9, status: 'Planejado' },
+      { codigo: '06.05', nome: 'Cobertura em telhas francesas', duracao: 10, status: 'Planejado' },
+      { codigo: '06.06', nome: 'Cobertura em shingles', duracao: 11, status: 'Planejado' },
+      { codigo: '06.07', nome: 'Membranas de impermeabilização', duracao: 12, status: 'Planejado' },
+      { codigo: '06.08', nome: 'Calhas e rufos', duracao: 13, status: 'Planejado' },
+      { codigo: '06.09', nome: 'Condutores', duracao: 14, status: 'Planejado' },
+      { codigo: '06.10', nome: 'Platibandas', duracao: 15, status: 'Planejado' },
+      { codigo: '09.01', nome: 'Eletroduto e passagem', duracao: 16, status: 'Planejado' },
+      { codigo: '09.02', nome: 'Caixas de passagem', duracao: 2, status: 'Planejado' },
+      { codigo: '09.03', nome: 'Quadro de distribuição', duracao: 3, status: 'Planejado' },
+      { codigo: '09.04', nome: 'Disjuntores', duracao: 4, status: 'Planejado' },
+      { codigo: '09.05', nome: 'Tomadas', duracao: 5, status: 'Planejado' },
+      { codigo: '09.06', nome: 'Interruptores', duracao: 6, status: 'Planejado' },
+      { codigo: '09.07', nome: 'Lâmpadas e lustres', duracao: 7, status: 'Planejado' },
+      { codigo: '09.08', nome: 'Instalação de AR', duracao: 8, status: 'Planejado' },
+      { codigo: '09.09', nome: 'Instalação de chuveiro elétrico', duracao: 9, status: 'Planejado' },
+      { codigo: '09.10', nome: 'Cabos e fios', duracao: 10, status: 'Planejado' },
+      { codigo: '10.01', nome: 'Tubo PVC', duracao: 11, status: 'Planejado' },
+      { codigo: '10.02', nome: 'Tubo CPVC', duracao: 12, status: 'Planejado' },
+      { codigo: '10.03', nome: 'Tubo cobre', duracao: 13, status: 'Planejado' },
+      { codigo: '10.04', nome: 'Caixas de esgoto', duracao: 14, status: 'Planejado' },
+      { codigo: '10.05', nome: 'Colunas de prumada', duracao: 15, status: 'Planejado' },
+      { codigo: '10.06', nome: 'Ralos', duracao: 16, status: 'Planejado' },
+      { codigo: '10.07', nome: 'Grelhas', duracao: 2, status: 'Planejado' },
+      { codigo: '10.08', nome: 'Pias', duracao: 3, status: 'Planejado' },
+      { codigo: '10.09', nome: 'Cubas', duracao: 4, status: 'Planejado' },
+      { codigo: '10.10', nome: 'Torneiras', duracao: 5, status: 'Planejado' }
+    ]
+  }
+};
+
+let currentObra = 'salvador1001';
+let dashboardObra = 'salvador1001';
+let editingIndex = -1;
+
+function handleLogin(event) {
+  event.preventDefault();
+  const user = document.getElementById('user').value;
+  const pass = document.getElementById('password').value;
+  if (user && pass) {
+    localStorage.setItem('pylar_user', user);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('active');
+    loadDashboard();
+    loadAtividades();
+  }
+}
+
+function logout() {
+  localStorage.removeItem('pylar_user');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').classList.remove('active');
+}
+
+function openTab(tabName, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabName).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+
+  const titles = {
+    'dashboard': 'Dashboard', 'atividades': 'Atividades', 'cronograma': 'Cronograma',
+    'metas': 'Metas', 'equipes': 'Equipes', 'materiais': 'Materiais',
+    'aditivos': 'Aditivos', 'urgencias': 'Urgências', 'importar': 'Importar'
+  };
+  document.getElementById('pageTitle').textContent = titles[tabName];
+}
+
+function changeObra(obra, btn) {
+  currentObra = obra;
+  document.querySelectorAll('#atividades .obra-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  loadAtividades();
+}
+
+function changeDashboardObra(obra, btn) {
+  dashboardObra = obra;
+  document.querySelectorAll('#dashboard .obra-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  loadDashboard();
+}
+
+function loadDashboard() {
+  const obraData = obrasData[dashboardObra];
+  const totalAtvs = obraData.atividades.length;
+  const concluidas = obraData.atividades.filter(a => a.status === 'Concluído').length;
+  const progresso = totalAtvs > 0 ? Math.round((concluidas / totalAtvs) * 100) : 0;
+
+  document.getElementById('dashTotalObras').textContent = '1';
+  document.getElementById('dashTotalAtvs').textContent = totalAtvs;
+  document.getElementById('dashProgresso').textContent = progresso + '%';
+
+  // Atualizar tabela com a obra selecionada
+  const tbody = document.getElementById('dashboardTable');
+  tbody.innerHTML = '';
+
+  const responsavel = dashboardObra === 'salvador1001' ? 'Deborah Camely' : 'Paulo Afonso';
+  const row = tbody.insertRow();
+  row.innerHTML = `
+    <td><strong>${obraData.nome}</strong></td>
+    <td>Manaus, AM</td>
+    <td>${responsavel}</td>
+    <td>${totalAtvs}</td>
+  `;
+}
+
+function loadAtividades() {
+  const data = obrasData[currentObra];
+  const tbody = document.getElementById('atividadesTable');
+  tbody.innerHTML = '';
+
+  data.atividades.forEach((atv, idx) => {
+    const row = tbody.insertRow();
+    const statusColor = atv.status === 'Concluído' ? '#2e7d32' : (atv.status === 'Em Andamento' ? '#f57c00' : '#1976d2');
+    row.innerHTML = `
+      <td>${atv.codigo}</td>
+      <td>${atv.nome}</td>
+      <td>${atv.duracao} dias</td>
+      <td><span style="background:${statusColor}20; padding:4px 8px; border-radius:4px; color:${statusColor};">${atv.status}</span></td>
+      <td><button class="edit-btn" onclick="openEdit(${idx})">Editar</button></td>
+    `;
+  });
+}
+
+function openEdit(idx) {
+  editingIndex = idx;
+  const atv = obrasData[currentObra].atividades[idx];
+  document.getElementById('editCode').value = atv.codigo;
+  document.getElementById('editName').value = atv.nome;
+  document.getElementById('editDuration').value = atv.duracao;
+  document.getElementById('editStatus').value = atv.status;
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('show');
+  editingIndex = -1;
+}
+
+function saveEdit() {
+  if (editingIndex >= 0) {
+    const atv = obrasData[currentObra].atividades[editingIndex];
+    atv.nome = document.getElementById('editName').value;
+    atv.duracao = parseInt(document.getElementById('editDuration').value);
+    atv.status = document.getElementById('editStatus').value;
+    closeModal();
+    loadAtividades();
+  }
+}
+
+window.addEventListener('load', function() {
+  if (localStorage.getItem('pylar_user')) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('active');
+    loadDashboard();
+    loadAtividades();
+  }
+});
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>
