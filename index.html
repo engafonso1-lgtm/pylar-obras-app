@@ -287,7 +287,7 @@
 </div>
 
 <script>
-const obrasData = {
+const obrasDataDefault = {
   salvador1001: {
     nome: 'Salvador 1001',
     atividades: [
@@ -463,6 +463,32 @@ const obrasData = {
   }
 };
 
+const OBRAS_STORAGE_KEY = 'pylar_obras_data_v1';
+
+function loadObrasData() {
+  try {
+    const saved = localStorage.getItem(OBRAS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.salvador1001 && parsed.salvador101) return parsed;
+    }
+  } catch (e) {
+    console.error('Falha ao ler dados persistidos, usando dados padrão:', e);
+  }
+  return JSON.parse(JSON.stringify(obrasDataDefault));
+}
+
+function persistObrasData() {
+  try {
+    localStorage.setItem(OBRAS_STORAGE_KEY, JSON.stringify(obrasData));
+    return true;
+  } catch (e) {
+    console.error('Falha ao persistir dados das obras:', e);
+    return false;
+  }
+}
+
+let obrasData = loadObrasData();
 let currentObra = 'salvador1001';
 let dashboardObra = 'salvador1001';
 let editingIndex = -1;
@@ -574,11 +600,21 @@ function closeModal() {
 function saveEdit() {
   if (editingIndex >= 0) {
     const atv = obrasData[currentObra].atividades[editingIndex];
+    const backup = { nome: atv.nome, duracao: atv.duracao, status: atv.status };
     atv.nome = document.getElementById('editName').value;
     atv.duracao = parseInt(document.getElementById('editDuration').value);
     atv.status = document.getElementById('editStatus').value;
+
+    const persisted = persistObrasData();
+    if (!persisted) {
+      Object.assign(atv, backup);
+      alert('Não foi possível salvar a alteração (falha ao persistir os dados). Nenhuma alteração foi aplicada.');
+      return;
+    }
+
     closeModal();
     loadAtividades();
+    loadDashboard();
   }
 }
 
