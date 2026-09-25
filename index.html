@@ -173,6 +173,41 @@
           </tbody>
         </table>
       </div>
+
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Situação por Etapa</h3>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Progresso calculado a partir do status real das atividades cadastradas (concluído / em andamento / planejado). Sem dados de data, o "planejado × real × previsão" não pode ser calculado.</p>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Etapa</th>
+              <th>Atividades</th>
+              <th>Concluídas</th>
+              <th>Em Andamento</th>
+              <th>Planejadas</th>
+              <th>Progresso</th>
+            </tr>
+          </thead>
+          <tbody id="etapaBreakdownTable">
+            <tr><td colspan="6" style="text-align:center; color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Pendências de Dados para Planejamento Completo</h3>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">O sistema hoje registra apenas código, nome, duração e status por atividade. Os itens abaixo são necessários para um planejamento completo (dependências, prazos reais, riscos) e estão marcados como PENDENTE DE INFORMAÇÃO — nenhum valor foi inventado para preenchê-los.</p>
+      <div class="table-container">
+        <table>
+          <tbody>
+            <tr><td style="width:280px;"><strong>Datas de início/fim por atividade</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td><strong>Dependências entre atividades (predecessoras)</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td><strong>Equipe responsável por atividade</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td><strong>Materiais e equipamentos necessários</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td><strong>Terceirizados e fornecedores</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td><strong>Restrições, riscos e liberações necessárias</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ATIVIDADES -->
@@ -562,6 +597,55 @@ function loadDashboard() {
     <td>${responsavel}</td>
     <td>${totalAtvs}</td>
   `;
+
+  renderEtapaBreakdown(dashboardObra);
+}
+
+// Agrupa atividades por etapa (2 primeiros dígitos do código, ex: "05.03" -> etapa "05").
+// Derivado só do que já existe no cadastro (codigo/status) -- nenhum dado inventado.
+function getEtapaBreakdown(obraKey) {
+  const atividades = obrasData[obraKey].atividades;
+  const etapas = {};
+  atividades.forEach(atv => {
+    const etapaCodigo = (atv.codigo || '').split('.')[0] || '??';
+    if (!etapas[etapaCodigo]) {
+      etapas[etapaCodigo] = { codigo: etapaCodigo, total: 0, concluidas: 0, andamento: 0, planejadas: 0 };
+    }
+    const e = etapas[etapaCodigo];
+    e.total++;
+    if (atv.status === 'Concluído') e.concluidas++;
+    else if (atv.status === 'Em Andamento') e.andamento++;
+    else e.planejadas++;
+  });
+  return Object.values(etapas)
+    .sort((a, b) => a.codigo.localeCompare(b.codigo))
+    .map(e => ({ ...e, progresso: e.total > 0 ? Math.round((e.concluidas / e.total) * 100) : 0 }));
+}
+
+function renderEtapaBreakdown(obraKey) {
+  const tbody = document.getElementById('etapaBreakdownTable');
+  if (!tbody) return;
+  const breakdown = getEtapaBreakdown(obraKey);
+  tbody.innerHTML = '';
+  breakdown.forEach(e => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>Etapa ${e.codigo}</td>
+      <td>${e.total}</td>
+      <td>${e.concluidas}</td>
+      <td>${e.andamento}</td>
+      <td>${e.planejadas}</td>
+      <td>${e.progresso}%</td>
+    `;
+  });
+}
+
+// Legenda de status honesta: só mapeia o que os dados realmente informam.
+// Não usamos "liberada/bloqueada" porque isso exige dados de dependência que não existem no sistema.
+function statusVisual(status) {
+  if (status === 'Concluído') return { emoji: '🟢', color: '#2e7d32' };
+  if (status === 'Em Andamento') return { emoji: '🟡', color: '#f57c00' };
+  return { emoji: '⚪', color: '#1976d2' }; // Planejado / aguardando início
 }
 
 function loadAtividades() {
@@ -571,12 +655,12 @@ function loadAtividades() {
 
   data.atividades.forEach((atv, idx) => {
     const row = tbody.insertRow();
-    const statusColor = atv.status === 'Concluído' ? '#2e7d32' : (atv.status === 'Em Andamento' ? '#f57c00' : '#1976d2');
+    const { emoji, color: statusColor } = statusVisual(atv.status);
     row.innerHTML = `
       <td>${atv.codigo}</td>
       <td>${atv.nome}</td>
       <td>${atv.duracao} dias</td>
-      <td><span style="background:${statusColor}20; padding:4px 8px; border-radius:4px; color:${statusColor};">${atv.status}</span></td>
+      <td><span style="background:${statusColor}20; padding:4px 8px; border-radius:4px; color:${statusColor};">${emoji} ${atv.status}</span></td>
       <td><button class="edit-btn" onclick="openEdit(${idx})">Editar</button></td>
     `;
   });
