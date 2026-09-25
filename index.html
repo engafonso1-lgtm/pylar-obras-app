@@ -194,17 +194,33 @@
         </table>
       </div>
 
-      <h3 style="margin-top: 32px; margin-bottom: 16px;">Pendências de Dados para Planejamento Completo</h3>
-      <p style="color:#999; font-size:12px; margin-bottom:16px;">O sistema hoje registra apenas código, nome, duração e status por atividade. Os itens abaixo são necessários para um planejamento completo (dependências, prazos reais, riscos) e estão marcados como PENDENTE DE INFORMAÇÃO — nenhum valor foi inventado para preenchê-los.</p>
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Pendências Técnicas de Planejamento — <span id="pendenciasObraNome"></span></h3>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Contagem real, calculada a partir dos dados cadastrados nesta obra (não são números fixos). Cada linha mostra quantas das atividades da obra ainda não têm essa informação.</p>
+      <div class="table-container">
+        <table>
+          <tbody id="pendenciasTecnicasTable"></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Aditivos e Terceirizados — <span id="aditivosResumoObraNome"></span></h3>
       <div class="table-container">
         <table>
           <tbody>
-            <tr><td style="width:280px;"><strong>Datas de início/fim por atividade</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
-            <tr><td><strong>Dependências entre atividades (predecessoras)</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
-            <tr><td><strong>Equipe responsável por atividade</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
-            <tr><td><strong>Materiais e equipamentos necessários</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
-            <tr><td><strong>Terceirizados e fornecedores</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
-            <tr><td><strong>Restrições, riscos e liberações necessárias</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO</td></tr>
+            <tr><td style="width:280px;"><strong>Aditivos registrados</strong></td><td id="dashAditivosCount">0 — nenhum levantamento realizado ainda</td></tr>
+            <tr><td><strong>Terceirizados identificados</strong></td><td style="color:#b45309;">PENDENTE DE LEVANTAMENTO (nenhuma fonte de contrato/escopo disponível no repositório)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">O que estruturalmente não pode ser calculado ainda</h3>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Isto não é uma lista de tarefas do sistema — é o que falta como <strong>dado de origem</strong> (quantitativo/BOQ, datas reais, projeto, contrato) para que o cálculo técnico exista. Nenhum destes itens foi estimado ou inventado.</p>
+      <div class="table-container">
+        <table>
+          <tbody>
+            <tr><td style="width:280px;"><strong>Produtividade via SINAPI/base técnica</strong></td><td style="color:#b45309;">PENDENTE DE CONFERÊNCIA DE PRODUTIVIDADE — exige quantitativo (m²/m³/un) por atividade, inexistente no sistema</td></tr>
+            <tr><td><strong>Dias de execução calculados (quantidade × coeficiente)</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO — depende da produtividade acima</td></tr>
+            <tr><td><strong>Caminho crítico e folgas</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO — depende de datas e dependências confirmadas</td></tr>
+            <tr><td><strong>Gantt planejado × real × previsão</strong></td><td style="color:#b45309;">PENDENTE DE INFORMAÇÃO — depende de datas de início/fim</td></tr>
           </tbody>
         </table>
       </div>
@@ -226,11 +242,12 @@
               <th>Nome</th>
               <th>Duração</th>
               <th>Status</th>
+              <th>Planejamento</th>
               <th>Ação</th>
             </tr>
           </thead>
           <tbody id="atividadesTable">
-            <tr><td colspan="5" style="text-align:center; color:#999;">Carregando...</td></tr>
+            <tr><td colspan="6" style="text-align:center; color:#999;">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -266,14 +283,58 @@
 
     <!-- MATERIAIS -->
     <div id="materiais" class="tab-content">
-      <h2>Materiais</h2>
-      <div class="placeholder-msg">Lista de materiais e quantitativos</div>
+      <h2 style="margin-bottom: 24px;">Materiais e Equipamentos</h2>
+      <div class="obra-selector">
+        <button class="obra-btn active" onclick="changeMateriaisObra('salvador1001', this)">Salvador 1001</button>
+        <button class="obra-btn" onclick="changeMateriaisObra('salvador101', this)">Salvador 101</button>
+      </div>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Materiais/equipamentos vinculados a atividades (cadastrados via edição da atividade). Sem quantitativo confirmado, nada é exibido aqui — nenhum valor é inventado.</p>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Atividade</th><th>Material/Equipamento</th><th>Quantidade</th><th>Necessário até</th><th>Status</th></tr>
+          </thead>
+          <tbody id="materiaisTable">
+            <tr><td colspan="5" style="text-align:center; color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ADITIVOS -->
     <div id="aditivos" class="tab-content">
-      <h2>Aditivos</h2>
-      <div class="placeholder-msg">Aditivos e mudanças de escopo</div>
+      <h2 style="margin-bottom: 24px;">Aditivos</h2>
+      <div class="obra-selector">
+        <button class="obra-btn active" onclick="changeAditivosObra('salvador1001', this)">Salvador 1001</button>
+        <button class="obra-btn" onclick="changeAditivosObra('salvador101', this)">Salvador 101</button>
+      </div>
+      <p style="color:#999; font-size:12px; margin-bottom:16px;">Serviços fora do escopo contratado identificados durante análise/planejamento entram aqui, não como atividade normal (regra do projeto). Status inicial sempre PENDENTE; responsável padrão: Jandecarla.</p>
+      <div class="card" style="margin-bottom:24px; max-width:500px;">
+        <h3 style="margin-bottom:16px;">Registrar novo aditivo</h3>
+        <div class="form-group">
+          <label>Etapa vinculada</label>
+          <input type="text" id="aditivoEtapa" placeholder="ex: 05 - Revestimento">
+        </div>
+        <div class="form-group">
+          <label>Serviço</label>
+          <input type="text" id="aditivoServico" placeholder="Descrição do serviço identificado">
+        </div>
+        <div class="form-group">
+          <label>Motivo</label>
+          <input type="text" id="aditivoMotivo" placeholder="Por que está fora do escopo contratado">
+        </div>
+        <button class="btn-save" style="width:100%;" onclick="addAditivo()">Registrar Aditivo</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Etapa</th><th>Serviço</th><th>Motivo</th><th>Levantamento</th><th>Status</th><th>Responsável</th></tr>
+          </thead>
+          <tbody id="aditivosTable">
+            <tr><td colspan="6" style="text-align:center; color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- URGÊNCIAS -->
@@ -313,6 +374,36 @@
         <option value="Em Andamento">Em Andamento</option>
         <option value="Concluído">Concluído</option>
       </select>
+    </div>
+    <hr style="border:none; border-top:1px solid var(--border); margin:20px 0;">
+    <p style="font-size:11px; color:#999; margin-bottom:16px;">Campos de planejamento técnico. Deixe em branco se não houver informação confiável — o sistema não assume valor.</p>
+    <div class="form-group" style="display:flex; gap:12px;">
+      <div style="flex:2;">
+        <label>Quantidade</label>
+        <input type="number" id="editQuantidade" step="any" placeholder="PENDENTE DE INFORMAÇÃO">
+      </div>
+      <div style="flex:1;">
+        <label>Unidade</label>
+        <input type="text" id="editUnidade" placeholder="m², m³, un...">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Equipe responsável</label>
+      <input type="text" id="editEquipe" placeholder="PENDENTE DE INFORMAÇÃO">
+    </div>
+    <div class="form-group" style="display:flex; gap:12px;">
+      <div style="flex:1;">
+        <label>Data início</label>
+        <input type="date" id="editDataInicio">
+      </div>
+      <div style="flex:1;">
+        <label>Data fim</label>
+        <input type="date" id="editDataFim">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Fonte da produtividade (ex: SINAPI 87531, coef. 0,90 H/m²)</label>
+      <input type="text" id="editProdutividade" placeholder="PENDENTE DE CONFERÊNCIA DE PRODUTIVIDADE">
     </div>
     <div class="modal-buttons">
       <button class="btn-save" onclick="saveEdit()">Salvar</button>
@@ -500,17 +591,40 @@ const obrasDataDefault = {
 
 const OBRAS_STORAGE_KEY = 'pylar_obras_data_v1';
 
+// Campos de planejamento técnico que o cadastro original não tinha.
+// Todos nascem vazios/null -- nada é inventado, só a estrutura fica pronta para receber dado real.
+function normalizeAtividade(atv) {
+  return Object.assign({
+    quantidade: null,
+    unidade: null,
+    equipe: null,
+    dataInicio: null,
+    dataFim: null,
+    produtividade: null,
+    materiais: []
+  }, atv);
+}
+
+function normalizeObrasData(data) {
+  ['salvador1001', 'salvador101'].forEach(key => {
+    if (!data[key]) return;
+    data[key].atividades = (data[key].atividades || []).map(normalizeAtividade);
+    if (!Array.isArray(data[key].aditivos)) data[key].aditivos = [];
+  });
+  return data;
+}
+
 function loadObrasData() {
   try {
     const saved = localStorage.getItem(OBRAS_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed && parsed.salvador1001 && parsed.salvador101) return parsed;
+      if (parsed && parsed.salvador1001 && parsed.salvador101) return normalizeObrasData(parsed);
     }
   } catch (e) {
     console.error('Falha ao ler dados persistidos, usando dados padrão:', e);
   }
-  return JSON.parse(JSON.stringify(obrasDataDefault));
+  return normalizeObrasData(JSON.parse(JSON.stringify(obrasDataDefault)));
 }
 
 function persistObrasData() {
@@ -538,6 +652,8 @@ function handleLogin(event) {
     document.getElementById('appScreen').classList.add('active');
     loadDashboard();
     loadAtividades();
+    loadMateriais();
+    loadAditivos();
   }
 }
 
@@ -599,6 +715,135 @@ function loadDashboard() {
   `;
 
   renderEtapaBreakdown(dashboardObra);
+  renderPendenciasTecnicas(dashboardObra);
+}
+
+// Contagem REAL (não fixa) de quantas atividades da obra ainda não têm cada campo técnico.
+function renderPendenciasTecnicas(obraKey) {
+  const el = document.getElementById('pendenciasTecnicasTable');
+  const nomeEl = document.getElementById('pendenciasObraNome');
+  const aditivosNomeEl = document.getElementById('aditivosResumoObraNome');
+  const aditivosCountEl = document.getElementById('dashAditivosCount');
+  if (!el) return;
+
+  const obraData = obrasData[obraKey];
+  const atividades = obraData.atividades;
+  const total = atividades.length;
+  const semQuantidade = atividades.filter(a => a.quantidade === null || a.quantidade === undefined || !a.unidade).length;
+  const semEquipe = atividades.filter(a => !a.equipe).length;
+  const semData = atividades.filter(a => !a.dataInicio || !a.dataFim).length;
+  const semProdutividade = atividades.filter(a => !a.produtividade).length;
+  const semMaterial = atividades.filter(a => !a.materiais || a.materiais.length === 0).length;
+
+  function linha(label, faltando) {
+    const cor = faltando === 0 ? '#2e7d32' : '#b45309';
+    const texto = faltando === 0 ? `Completo (0/${total} pendentes)` : `${faltando}/${total} atividades sem esse dado`;
+    return `<tr><td style="width:280px;"><strong>${label}</strong></td><td style="color:${cor};">${texto}</td></tr>`;
+  }
+
+  el.innerHTML =
+    linha('Quantidade e unidade', semQuantidade) +
+    linha('Equipe responsável', semEquipe) +
+    linha('Data de início/fim', semData) +
+    linha('Fonte de produtividade (SINAPI/base técnica)', semProdutividade) +
+    linha('Materiais/equipamentos vinculados', semMaterial);
+
+  if (nomeEl) nomeEl.textContent = obraData.nome;
+  if (aditivosNomeEl) aditivosNomeEl.textContent = obraData.nome;
+  if (aditivosCountEl) {
+    const n = (obraData.aditivos || []).length;
+    aditivosCountEl.textContent = n === 0
+      ? '0 — nenhum levantamento realizado ainda'
+      : `${n} registrado(s) — ver aba Aditivos`;
+  }
+}
+
+let materiaisObra = 'salvador1001';
+function changeMateriaisObra(obra, btn) {
+  materiaisObra = obra;
+  document.querySelectorAll('#materiais .obra-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  loadMateriais();
+}
+
+function loadMateriais() {
+  const tbody = document.getElementById('materiaisTable');
+  if (!tbody) return;
+  const atividades = obrasData[materiaisObra].atividades;
+  const linhas = [];
+  atividades.forEach(atv => {
+    (atv.materiais || []).forEach(m => {
+      linhas.push(`<tr>
+        <td>${atv.codigo} - ${atv.nome}</td>
+        <td>${m.nome || 'PENDENTE DE INFORMAÇÃO'}</td>
+        <td>${m.quantidade ?? 'PENDENTE DE QUANTITATIVO'}${m.unidade ? ' ' + m.unidade : ''}</td>
+        <td>${m.necessarioAte || 'PENDENTE DE INFORMAÇÃO'}</td>
+        <td>${m.status || 'PENDENTE DE INFORMAÇÃO'}</td>
+      </tr>`);
+    });
+  });
+  tbody.innerHTML = linhas.length
+    ? linhas.join('')
+    : '<tr><td colspan="5" style="text-align:center; color:#999;">Nenhum material cadastrado ainda — PENDENTE DE LEVANTAMENTO. Materiais só aparecem aqui quando cadastrados numa atividade específica.</td></tr>';
+}
+
+let aditivosObra = 'salvador1001';
+function changeAditivosObra(obra, btn) {
+  aditivosObra = obra;
+  document.querySelectorAll('#aditivos .obra-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  loadAditivos();
+}
+
+function loadAditivos() {
+  const tbody = document.getElementById('aditivosTable');
+  if (!tbody) return;
+  const aditivos = obrasData[aditivosObra].aditivos || [];
+  tbody.innerHTML = aditivos.length
+    ? aditivos.map(a => `<tr>
+        <td>${a.etapa || 'PENDENTE DE INFORMAÇÃO'}</td>
+        <td>${a.servico}</td>
+        <td>${a.motivo || 'PENDENTE DE INFORMAÇÃO'}</td>
+        <td>${a.levantamento}</td>
+        <td>${a.status}</td>
+        <td>${a.responsavel}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center; color:#999;">Nenhum aditivo registrado ainda.</td></tr>';
+}
+
+function addAditivo() {
+  const servico = document.getElementById('aditivoServico').value.trim();
+  if (!servico) {
+    alert('Informe o serviço identificado antes de registrar o aditivo.');
+    return;
+  }
+  const etapa = document.getElementById('aditivoEtapa').value.trim();
+  const motivo = document.getElementById('aditivoMotivo').value.trim();
+
+  const novoAditivo = {
+    etapa: etapa || null,
+    servico: servico,
+    motivo: motivo || null,
+    levantamento: 'PENDENTE DE LEVANTAMENTO',
+    status: 'PENDENTE',
+    responsavel: 'Jandecarla'
+  };
+
+  if (!Array.isArray(obrasData[aditivosObra].aditivos)) obrasData[aditivosObra].aditivos = [];
+  obrasData[aditivosObra].aditivos.push(novoAditivo);
+
+  const persisted = persistObrasData();
+  if (!persisted) {
+    obrasData[aditivosObra].aditivos.pop();
+    alert('Não foi possível salvar o aditivo (falha ao persistir os dados).');
+    return;
+  }
+
+  document.getElementById('aditivoEtapa').value = '';
+  document.getElementById('aditivoServico').value = '';
+  document.getElementById('aditivoMotivo').value = '';
+  loadAditivos();
+  if (dashboardObra === aditivosObra) loadDashboard();
 }
 
 // Agrupa atividades por etapa (2 primeiros dígitos do código, ex: "05.03" -> etapa "05").
@@ -648,6 +893,20 @@ function statusVisual(status) {
   return { emoji: '⚪', color: '#1976d2' }; // Planejado / aguardando início
 }
 
+// Campos de planejamento técnico que uma atividade deveria ter para ser considerada
+// tecnicamente fundamentada (quantidade/unidade contam como um item).
+function planejamentoStatus(atv) {
+  const itens = [
+    !!(atv.quantidade !== null && atv.quantidade !== undefined && atv.unidade),
+    !!atv.equipe,
+    !!atv.dataInicio,
+    !!atv.dataFim,
+    !!atv.produtividade
+  ];
+  const preenchidos = itens.filter(Boolean).length;
+  return { preenchidos, total: itens.length };
+}
+
 function loadAtividades() {
   const data = obrasData[currentObra];
   const tbody = document.getElementById('atividadesTable');
@@ -656,11 +915,14 @@ function loadAtividades() {
   data.atividades.forEach((atv, idx) => {
     const row = tbody.insertRow();
     const { emoji, color: statusColor } = statusVisual(atv.status);
+    const { preenchidos, total } = planejamentoStatus(atv);
+    const planColor = preenchidos === total ? '#2e7d32' : (preenchidos === 0 ? '#b45309' : '#1976d2');
     row.innerHTML = `
       <td>${atv.codigo}</td>
       <td>${atv.nome}</td>
       <td>${atv.duracao} dias</td>
       <td><span style="background:${statusColor}20; padding:4px 8px; border-radius:4px; color:${statusColor};">${emoji} ${atv.status}</span></td>
+      <td><span style="color:${planColor}; font-size:12px;">${preenchidos}/${total} campos técnicos</span></td>
       <td><button class="edit-btn" onclick="openEdit(${idx})">Editar</button></td>
     `;
   });
@@ -673,6 +935,12 @@ function openEdit(idx) {
   document.getElementById('editName').value = atv.nome;
   document.getElementById('editDuration').value = atv.duracao;
   document.getElementById('editStatus').value = atv.status;
+  document.getElementById('editQuantidade').value = atv.quantidade ?? '';
+  document.getElementById('editUnidade').value = atv.unidade ?? '';
+  document.getElementById('editEquipe').value = atv.equipe ?? '';
+  document.getElementById('editDataInicio').value = atv.dataInicio ?? '';
+  document.getElementById('editDataFim').value = atv.dataFim ?? '';
+  document.getElementById('editProdutividade').value = atv.produtividade ?? '';
   document.getElementById('editModal').classList.add('show');
 }
 
@@ -684,10 +952,17 @@ function closeModal() {
 function saveEdit() {
   if (editingIndex >= 0) {
     const atv = obrasData[currentObra].atividades[editingIndex];
-    const backup = { nome: atv.nome, duracao: atv.duracao, status: atv.status };
+    const backup = Object.assign({}, atv);
     atv.nome = document.getElementById('editName').value;
     atv.duracao = parseInt(document.getElementById('editDuration').value);
     atv.status = document.getElementById('editStatus').value;
+    const qtdRaw = document.getElementById('editQuantidade').value;
+    atv.quantidade = qtdRaw === '' ? null : parseFloat(qtdRaw);
+    atv.unidade = document.getElementById('editUnidade').value || null;
+    atv.equipe = document.getElementById('editEquipe').value || null;
+    atv.dataInicio = document.getElementById('editDataInicio').value || null;
+    atv.dataFim = document.getElementById('editDataFim').value || null;
+    atv.produtividade = document.getElementById('editProdutividade').value || null;
 
     const persisted = persistObrasData();
     if (!persisted) {
@@ -699,6 +974,7 @@ function saveEdit() {
     closeModal();
     loadAtividades();
     loadDashboard();
+    loadMateriais();
   }
 }
 
@@ -708,6 +984,8 @@ window.addEventListener('load', function() {
     document.getElementById('appScreen').classList.add('active');
     loadDashboard();
     loadAtividades();
+    loadMateriais();
+    loadAditivos();
   }
 });
 
